@@ -1,0 +1,38 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "https://your-backend-url.onrender.com/api",
+    "VITE_GOOGLE_CLIENT_ID": "your_google_client_id.apps.googleusercontent.com",
+    "VITE_GITHUB_CLIENT_ID": "your_github_client_id",
+    "VITE_GITHUB_REDIRECT_URI": "https://your-app.vercel.app/auth/github/callback"
+  }
+}
