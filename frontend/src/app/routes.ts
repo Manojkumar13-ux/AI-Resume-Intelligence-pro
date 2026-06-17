@@ -1,7 +1,11 @@
 import { type RouteConfig } from "@react-router/dev/routes";
 
 export default [
-  { path: "/", file: "routes/home.tsx" },
+  // Root is now Login page
+  { path: "/", file: "routes/auth.tsx" },
+  // Dashboard is now at /dashboard
+  { path: "/dashboard", file: "routes/home.tsx" },
+  // Other routes remain the same
   { path: "/results", file: "routes/results.tsx" },
   { path: "/my-data", file: "routes/my-data.tsx" },
   { path: "/resumes", file: "routes/resumes.tsx" },

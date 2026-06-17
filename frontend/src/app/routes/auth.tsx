@@ -10,7 +10,6 @@ export function meta() {
   ];
 }
 
-// Get Client IDs from environment
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "";
 const GITHUB_REDIRECT_URI = import.meta.env.VITE_GITHUB_REDIRECT_URI || "http://localhost:3000/auth/github/callback";
@@ -25,7 +24,6 @@ export default function Auth() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ===== EMAIL/PASSWORD LOGIN =====
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -33,10 +31,7 @@ export default function Auth() {
 
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo: extract name from email
       const userName = email.split('@')[0] || "User";
-      
       const user = {
         name: userName,
         email: email,
@@ -44,12 +39,10 @@ export default function Auth() {
         emailVerified: true,
         isPro: false,
       };
-      
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", "mock_jwt_token");
-      
       alert(`✅ Welcome ${userName}!`);
-      navigate("/");
+      navigate("/dashboard"); // ← Changed
     } catch (err) {
       setError("Login failed. Please try again.");
     } finally {
@@ -57,13 +50,8 @@ export default function Auth() {
     }
   };
 
-  // ===== GOOGLE LOGIN =====
   const handleGoogleSuccess = (credentialResponse: any) => {
-    console.log("Google login success:", credentialResponse);
-    
-    // Decode the Google JWT token to get user info
     const decoded = jwtDecode(credentialResponse.credential) as any;
-    
     const user = {
       name: decoded.name || "Google User",
       email: decoded.email || "google@example.com",
@@ -71,25 +59,20 @@ export default function Auth() {
       emailVerified: decoded.email_verified || true,
       isPro: false,
     };
-
     localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("token", credentialResponse.credential);
-    
     alert(`✅ Welcome ${user.name}!`);
-    navigate("/");
+    navigate("/dashboard"); // ← Changed
   };
 
   const handleGoogleError = () => {
-    console.error("Google login error");
     setError("Google login failed. Please try again or use email/password.");
   };
 
-  // ===== GITHUB LOGIN =====
   const handleGitHubLogin = () => {
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${GITHUB_REDIRECT_URI}&scope=user:email`;
   };
 
-  // Check if Google Client ID is set
   const hasGoogleClientId = GOOGLE_CLIENT_ID && GOOGLE_CLIENT_ID !== "" && GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
 
   return (
@@ -109,14 +92,12 @@ export default function Auth() {
             </p>
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
               ❌ {error}
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
@@ -125,7 +106,7 @@ export default function Auth() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition duration-200"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition"
                   placeholder="John Doe"
                   required={!isLogin}
                 />
@@ -138,7 +119,7 @@ export default function Auth() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition duration-200"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition"
                 placeholder="john@example.com"
                 required
               />
@@ -150,7 +131,7 @@ export default function Auth() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition duration-200"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition"
                 placeholder="••••••••"
                 required
               />
@@ -189,7 +170,6 @@ export default function Auth() {
             </button>
           </form>
 
-          {/* Toggle Login/Signup */}
           <p className="text-center text-sm text-slate-500 mt-6">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
@@ -198,20 +178,18 @@ export default function Auth() {
                 setName("");
                 setError(null);
               }}
-              className="text-indigo-600 font-semibold hover:underline ml-1 transition-colors"
+              className="text-indigo-600 font-semibold hover:underline ml-1"
             >
               {isLogin ? "Sign Up" : "Sign In"}
             </button>
           </p>
 
-          {/* Divider */}
           <div className="mt-6 flex items-center gap-4">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
             <span className="text-xs text-slate-400 font-medium">or continue with</span>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
           </div>
 
-          {/* Social Login Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 mt-4">
             <div className="w-full sm:w-1/2">
               {hasGoogleClientId ? (
@@ -244,7 +222,6 @@ export default function Auth() {
             </button>
           </div>
 
-          {/* Demo Credentials */}
           <div className="mt-6 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 text-center">
             <p className="text-xs text-slate-500">
               🔑 <span className="font-medium">Demo Credentials:</span> 

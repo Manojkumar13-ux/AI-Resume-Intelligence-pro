@@ -518,7 +518,7 @@ export default function Home() {
             <p className="text-xs text-blue-200">View all your resumes</p>
           </Link>
           <Link 
-            to="/"
+            to="/dashboard"
             className="group bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-6 shadow-lg hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 hover:-translate-y-1 text-white text-center"
           >
             <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">📤</div>
