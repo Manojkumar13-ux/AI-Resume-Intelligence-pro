@@ -29,12 +29,14 @@ export default function Home() {
   const simulateUpload = async (file: File) => {
     setIsUploading(true);
     setUploadProgress(0);
+
     let progress = 0;
     const interval = setInterval(() => {
       progress += Math.random() * 15 + 5;
       if (progress >= 100) {
         progress = 100;
         clearInterval(interval);
+
         setTimeout(async () => {
           try {
             let result;
@@ -47,11 +49,18 @@ export default function Home() {
               const keywords = Math.floor(Math.random() * 20) + 70;
               const format = Math.floor(Math.random() * 20) + 75;
               const overallScore = Math.round((skills + experience + education + keywords + format) / 5);
+
               result = {
                 id: Date.now(),
                 filename: file.name,
                 atsScore: overallScore,
-                analysis: { skills, experience, education, keywords, format },
+                analysis: {
+                  skills,
+                  experience,
+                  education,
+                  keywords,
+                  format,
+                },
                 strengths: [
                   "Good use of action verbs",
                   "Well-structured experience section",
@@ -60,14 +69,15 @@ export default function Home() {
                   "Consistent formatting",
                 ],
                 improvements: [
-                  "Add more quantifiable achievements",
-                  "Include more relevant keywords",
-                  "Add certifications",
-                  "Include a professional summary",
+                  "Add more quantifiable achievements (e.g., 'Increased sales by 20%')",
+                  "Include more relevant keywords from job description",
+                  "Add certifications (if any)",
+                  "Include a professional summary at the top",
                 ],
                 missingKeywords: ["TypeScript", "Next.js", "AWS", "Docker", "CI/CD"],
               };
             }
+
             addResume({
               filename: file.name,
               score: result.atsScore,
@@ -77,8 +87,12 @@ export default function Home() {
               improvements: result.improvements,
               missingKeywords: result.missingKeywords,
             });
+
             navigate("/results", { state: { result } });
-            if (fileInputRef.current) fileInputRef.current.value = "";
+
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
             setSelectedFile(null);
             setIsUploading(false);
             setUploadProgress(0);
@@ -125,7 +139,9 @@ export default function Home() {
   };
 
   const handleUploadClick = () => {
-    if (fileInputRef.current) fileInputRef.current.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const handleLogout = () => {
@@ -165,7 +181,7 @@ export default function Home() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-10">
         
-        {/* ===== HERO SECTION ===== */}
+        {/* HERO SECTION */}
         <div className="relative mb-10">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div>
@@ -209,7 +225,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ===== STATS CARDS – Slightly Lighter Gradients ===== */}
+        {/* STATS CARDS */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
           <div className="group bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl p-6 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-1 text-white">
             <div className="flex items-start justify-between">
@@ -264,10 +280,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ===== UPLOAD & SIDEBAR ===== */}
+        {/* UPLOAD & SIDEBAR */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="lg:col-span-2 space-y-6">
-            {/* Upload Zone – Dark Blue/Teal */}
+            {/* Upload Zone */}
             <div 
               className={`relative overflow-hidden rounded-2xl border-2 transition-all duration-300 ${
                 isDragging 
@@ -355,7 +371,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* ATS Score Trends – Colorful */}
+            {/* ATS Score Trends Chart */}
             {chartData.length > 0 && (
               <div className="bg-gradient-to-br from-cyan-50 to-blue-100 rounded-2xl p-6 shadow-lg border border-cyan-200">
                 <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
@@ -398,7 +414,7 @@ export default function Home() {
 
           {/* Right Sidebar */}
           <div className="space-y-6">
-            {/* AI Suggestions – Dark with lighter gradients */}
+            {/* AI Suggestions */}
             <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 shadow-lg border border-slate-700">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-xl">💡</span>
@@ -437,7 +453,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Recent Activity – Light Violet/Indigo */}
+            {/* Recent Activity */}
             <div className="bg-gradient-to-br from-violet-50 to-indigo-100 rounded-2xl p-6 shadow-lg border border-violet-200">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
@@ -467,7 +483,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ===== MISSING KEYWORDS ===== */}
+        {/* MISSING KEYWORDS */}
         <div className="bg-gradient-to-br from-pink-50 to-rose-100 rounded-2xl p-6 shadow-lg border border-pink-200 mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <div className="flex items-center gap-2">
@@ -491,7 +507,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ===== QUICK ACTION BUTTONS ===== */}
+        {/* QUICK ACTION BUTTONS */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link 
             to="/my-data"
@@ -527,7 +543,7 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* ===== PRO BANNER ===== */}
+        {/* PRO BANNER */}
         <div className="mt-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 rounded-2xl p-6 md:p-8 text-white text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
           <div className="absolute top-4 right-12 w-20 h-20 bg-white/10 rounded-full blur-xl animate-pulse-slow"></div>
