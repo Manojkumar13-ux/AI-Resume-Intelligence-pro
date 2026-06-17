@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
@@ -24,6 +24,15 @@ export default function Auth() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
+  // ===== EMAIL/PASSWORD LOGIN =====
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -42,7 +51,7 @@ export default function Auth() {
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", "mock_jwt_token");
       alert(`✅ Welcome ${userName}!`);
-      navigate("/dashboard"); // ← Changed
+      navigate("/dashboard");
     } catch (err) {
       setError("Login failed. Please try again.");
     } finally {
@@ -50,6 +59,7 @@ export default function Auth() {
     }
   };
 
+  // ===== GOOGLE LOGIN =====
   const handleGoogleSuccess = (credentialResponse: any) => {
     const decoded = jwtDecode(credentialResponse.credential) as any;
     const user = {
@@ -62,13 +72,14 @@ export default function Auth() {
     localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("token", credentialResponse.credential);
     alert(`✅ Welcome ${user.name}!`);
-    navigate("/dashboard"); // ← Changed
+    navigate("/dashboard");
   };
 
   const handleGoogleError = () => {
     setError("Google login failed. Please try again or use email/password.");
   };
 
+  // ===== GITHUB LOGIN =====
   const handleGitHubLogin = () => {
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${GITHUB_REDIRECT_URI}&scope=user:email`;
   };
