@@ -26,7 +26,7 @@ export const register = async (req, res) => {
       email,
       password,
       verificationToken,
-      verificationTokenExpires: Date.now() + 86400000, // 24 hours
+      verificationTokenExpires: Date.now() + 86400000,
     });
 
     await sendVerificationEmail(email, verificationToken);
@@ -141,7 +141,7 @@ export const forgotPassword = async (req, res) => {
 
     const resetToken = crypto.randomBytes(32).toString('hex');
     user.resetToken = resetToken;
-    user.resetTokenExpires = Date.now() + 3600000; // 1 hour
+    user.resetTokenExpires = Date.now() + 3600000;
     await user.save();
 
     await sendPasswordResetEmail(email, resetToken);

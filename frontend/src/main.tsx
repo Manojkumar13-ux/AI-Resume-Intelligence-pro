@@ -7,6 +7,7 @@ import MyData from './app/routes/my-data';
 import Resumes from './app/routes/resumes';
 import ResumeDetail from './app/routes/resume-detail';
 import Auth from './app/routes/auth';
+import Profile from './app/routes/profile';
 import './app/app.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -19,6 +20,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/resumes" element={<Resumes />} />
         <Route path="/resume/:id" element={<ResumeDetail />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/profile" element={<Profile />} />
+        {/* Add more routes as needed */}
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

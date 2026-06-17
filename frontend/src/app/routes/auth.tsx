@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from "jwt-decode";
 
 export function meta() {
   return [
@@ -9,8 +10,9 @@ export function meta() {
   ];
 }
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
-const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "YOUR_GITHUB_CLIENT_ID";
+// Get Client IDs from environment
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "";
 const GITHUB_REDIRECT_URI = import.meta.env.VITE_GITHUB_REDIRECT_URI || "http://localhost:3000/auth/github/callback";
 
 export default function Auth() {
@@ -21,29 +23,35 @@ export default function Auth() {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // ===== EMAIL/PASSWORD LOGIN =====
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
 
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Mock user – replace with real API call
+      // For demo: extract name from email
+      const userName = email.split('@')[0] || "User";
+      
       const user = {
-        name: email.split('@')[0] || "User",
+        name: userName,
         email: email,
-        avatar: "👤"
+        avatar: "👤",
+        emailVerified: true,
+        isPro: false,
       };
       
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", "mock_jwt_token");
       
-      alert(`✅ ${isLogin ? "Welcome back" : "Account created"}!`);
-      navigate("/"); // Redirect to dashboard
-    } catch (error) {
-      alert("❌ Login failed. Please try again.");
+      alert(`✅ Welcome ${userName}!`);
+      navigate("/");
+    } catch (err) {
+      setError("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -51,21 +59,29 @@ export default function Auth() {
 
   // ===== GOOGLE LOGIN =====
   const handleGoogleSuccess = (credentialResponse: any) => {
-    // Decode the credential to get user info (optional)
-    // For demo, store mock user
+    console.log("Google login success:", credentialResponse);
+    
+    // Decode the Google JWT token to get user info
+    const decoded = jwtDecode(credentialResponse.credential) as any;
+    
     const user = {
-      name: "Google User",
-      email: "google@example.com",
-      avatar: "🔵"
+      name: decoded.name || "Google User",
+      email: decoded.email || "google@example.com",
+      avatar: "🔵",
+      emailVerified: decoded.email_verified || true,
+      isPro: false,
     };
+
     localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("token", credentialResponse.credential);
-    alert("✅ Google Login Successful!");
+    
+    alert(`✅ Welcome ${user.name}!`);
     navigate("/");
   };
 
   const handleGoogleError = () => {
-    alert("❌ Google Login Failed. Please try again.");
+    console.error("Google login error");
+    setError("Google login failed. Please try again or use email/password.");
   };
 
   // ===== GITHUB LOGIN =====
@@ -73,11 +89,14 @@ export default function Auth() {
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${GITHUB_REDIRECT_URI}&scope=user:email`;
   };
 
+  // Check if Google Client ID is set
+  const hasGoogleClientId = GOOGLE_CLIENT_ID && GOOGLE_CLIENT_ID !== "" && GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-8 max-w-md w-full animate-scale-in border border-white/20">
-          {/* Logo & Title */}
+          {/* Logo */}
           <div className="text-center mb-8">
             <Link to="/" className="text-5xl block mb-3 hover:scale-110 transition-transform duration-300 inline-block">
               🧠
@@ -89,6 +108,13 @@ export default function Auth() {
               {isLogin ? "Welcome back!" : "Start analyzing your resume with AI"}
             </p>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+              ❌ {error}
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -141,7 +167,9 @@ export default function Auth() {
                   />
                   Remember me
                 </label>
-                <a href="#" className="text-sm text-indigo-600 hover:underline">Forgot password?</a>
+                <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
+                  Forgot password?
+                </Link>
               </div>
             )}
 
@@ -161,12 +189,14 @@ export default function Auth() {
             </button>
           </form>
 
+          {/* Toggle Login/Signup */}
           <p className="text-center text-sm text-slate-500 mt-6">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
               onClick={() => {
                 setIsLogin(!isLogin);
                 setName("");
+                setError(null);
               }}
               className="text-indigo-600 font-semibold hover:underline ml-1 transition-colors"
             >
@@ -174,26 +204,35 @@ export default function Auth() {
             </button>
           </p>
 
+          {/* Divider */}
           <div className="mt-6 flex items-center gap-4">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
             <span className="text-xs text-slate-400 font-medium">or continue with</span>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
           </div>
 
+          {/* Social Login Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 mt-4">
             <div className="w-full sm:w-1/2">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                useOneTap
-                theme="outline"
-                size="large"
-                shape="pill"
-                text="continue_with"
-                logo_alignment="center"
-                width="100%"
-              />
+              {hasGoogleClientId ? (
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  useOneTap={false}
+                  theme="outline"
+                  size="large"
+                  shape="pill"
+                  text="continue_with"
+                  logo_alignment="center"
+                  width="100%"
+                />
+              ) : (
+                <div className="w-full py-2.5 px-4 border-2 border-slate-200 rounded-xl text-sm font-medium text-slate-400 text-center bg-slate-50">
+                  ⚠️ Google (Client ID missing)
+                </div>
+              )}
             </div>
+
             <button
               onClick={handleGitHubLogin}
               className="w-full sm:w-1/2 flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-indigo-300 transition-all duration-300 text-sm font-medium text-slate-700"
@@ -205,6 +244,7 @@ export default function Auth() {
             </button>
           </div>
 
+          {/* Demo Credentials */}
           <div className="mt-6 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 text-center">
             <p className="text-xs text-slate-500">
               🔑 <span className="font-medium">Demo Credentials:</span> 
