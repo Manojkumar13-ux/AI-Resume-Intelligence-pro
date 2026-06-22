@@ -1,3 +1,12 @@
+                                               AI-RESUME-INTELLIGENCE-PRO
+                                               
+## 🚀 Live Demo
+
+**Frontend:** https://ai-resume-intellegence-pro.vercel.app
+
+**Backend:** (Coming soon)
+
+
 login page
 <img width="1920" height="1080" alt="Screenshot (3)" src="https://github.com/user-attachments/assets/c1fb085f-6db4-4aeb-91ba-745f44242080" />
 <img width="1920" height="1080" alt="Screenshot (4)" src="https://github.com/user-attachments/assets/fcdea96e-cf55-4be8-90e7-0efd3322d8e5" />
