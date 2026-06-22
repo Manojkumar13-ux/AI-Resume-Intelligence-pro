@@ -1,0 +1,91 @@
+{
+  "users": [
+    {
+      "id": "1781958884408",
+      "email": "okmanoj110@gmail.com",
+      "name": "V. Manoj Kumar",
+      "googleId": "112867102405624302825",
+      "password": "$2a$10$q4dgJXLvdghLH7F8Qzj7yuKJBvJYaQUoUu729dRPMLmw6n3/TNAQ6",
+      "credits": 3,
+      "role": "user",
+      "subscription": {
+        "plan": "free",
+        "expiresAt": null
+      },
+      "lastLogin": "2026-06-20T12:34:44.173Z",
+      "createdAt": "2026-06-20T12:34:44.409Z"
+    },
+    {
+      "id": "1782113376630",
+      "email": "manoj@example.com",
+      "password": "$2a$10$dmj/WDMm7gyLvbs4jaTrbOCcenAr/J1ot8s7F6TSl2mkAZG1G5sje",
+      "name": "Manoj",
+      "credits": 3,
+      "role": "user",
+      "subscription": {
+        "plan": "free",
+        "expiresAt": null
+      },
+      "lastLogin": "2026-06-22T07:29:36.517Z",
+      "createdAt": "2026-06-22T07:29:36.630Z"
+    },
+    {
+      "id": "1782113925316",
+      "email": "rakesh23@gmail.com",
+      "password": "$2a$10$xASGGc36hT7CfMjkrIMsFuW..zkQYY9vZGqoTtl5qUrryIWuUqewS",
+      "name": "rakesh",
+      "credits": 3,
+      "role": "user",
+      "subscription": {
+        "plan": "free",
+        "expiresAt": null
+      },
+      "lastLogin": "2026-06-22T07:38:45.115Z",
+      "createdAt": "2026-06-22T07:38:45.316Z"
+    },
+    {
+      "id": "1782119530745",
+      "email": "srinu@example.com",
+      "password": "$2a$10$efJJn3.tFda9AFIcp9WNfeeS7uWwM.T7tyqicbuNH8IhMf3jALGF6",
+      "name": "srinu",
+      "credits": 3,
+      "role": "user",
+      "subscription": {
+        "plan": "free",
+        "expiresAt": null
+      },
+      "lastLogin": "2026-06-22T09:12:10.686Z",
+      "createdAt": "2026-06-22T09:12:10.745Z"
+    },
+    {
+      "id": "1782120774777",
+      "email": "rakesh110@gmai.com",
+      "password": "$2a$10$xdxH7LEKwH30Eu.VLKu01OzWMcurPjlfUFIjYJ20wLSHA.Tc2Jlji",
+      "name": "rakesh",
+      "credits": 3,
+      "role": "user",
+      "subscription": {
+        "plan": "free",
+        "expiresAt": null
+      },
+      "lastLogin": "2026-06-22T09:32:54.645Z",
+      "createdAt": "2026-06-22T09:32:54.777Z"
+    },
+    {
+      "id": "1782125047378",
+      "email": "rakesh@gmail.com",
+      "password": "$2a$10$pE3SBvBlXpn3NleDaX4SKey7wCAqku1ybmg4TWISfW1QdpQhA8Clu",
+      "name": "rakesh",
+      "credits": 3,
+      "role": "user",
+      "subscription": {
+        "plan": "free",
+        "expiresAt": null
+      },
+      "lastLogin": "2026-06-22T10:44:07.182Z",
+      "createdAt": "2026-06-22T10:44:07.378Z"
+    }
+  ],
+  "resumes": [],
+  "analyses": []
+}
