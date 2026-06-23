@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User.js'; // Removed .js
+import { User } from '../models/User.js'; // Added .js
 
 export interface AuthRequest extends Request {
   user?: any;
@@ -33,12 +33,7 @@ export const authenticate = async (
       return;
     }
 
-    // Add user to request with both id and _id for compatibility
-    req.user = { 
-      ...user, 
-      _id: user.id,  // Keep _id for backward compatibility
-      id: user.id    // Also keep id
-    };
+    req.user = { ...user, _id: user.id };
     req.token = token;
     next();
   } catch (error) {
@@ -53,20 +48,20 @@ export const authenticate = async (
   }
 };
 
+export const auth = authenticate;
+
 export const isAdmin = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Check if user has admin role
-    if (req.user && (req.user.role === 'admin' || req.user.role === 'Admin')) {
+    if (req.user && req.user.role === 'admin') {
       next();
     } else {
       res.status(403).json({ message: 'Admin access required' });
     }
   } catch (error) {
-    console.error('Admin check error:', error);
     res.status(403).json({ message: 'Authorization failed' });
   }
 };
@@ -77,27 +72,16 @@ export const requirePro = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.user?.id || req.user?._id;
-    if (!userId) {
-      res.status(401).json({ message: 'User not authenticated' });
-      return;
-    }
-
-    const user = await User.findById(userId);
+    const user = await User.findById(req.user._id);
     if (!user) {
       res.status(401).json({ message: 'User not found' });
       return;
     }
 
-    // Check if user is Pro
-    const isPro = User.isPro ? User.isPro(user) : 
-      (user.subscription?.plan !== 'free' && 
-       (!user.subscription?.expiresAt || new Date(user.subscription.expiresAt) > new Date()));
+    const isPro = user.subscription?.plan !== 'free' && 
+                  (!user.subscription?.expiresAt || new Date(user.subscription.expiresAt) > new Date());
 
-    // Check if user has credits
-    const hasCredits = user.credits && user.credits > 0;
-
-    if (isPro || hasCredits) {
+    if (isPro || user.credits > 0) {
       next();
     } else {
       res.status(403).json({ 
@@ -106,10 +90,6 @@ export const requirePro = async (
       });
     }
   } catch (error) {
-    console.error('Subscription check error:', error);
     res.status(500).json({ message: 'Error checking subscription' });
   }
 };
-
-// Export auth as well for backward compatibility
-export const auth = authenticate;

@@ -1,89 +1,77 @@
 import { Request, Response } from 'express';
-import { AuthRequest } from '../middleware/auth.js';
-import { User } from '../models/User.js';
+import { AuthRequest } from '../middleware/auth.js'; // Added .js
+import { User } from '../models/User.js'; // Added .js
 
-export const createCheckoutSession = async (req: AuthRequest, res: Response): Promise<void> => {
+export const createPaymentIntent = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const userId = req.user?.id || req.user?._id;
     const { plan } = req.body;
-    
-    if (!['pro', 'enterprise'].includes(plan)) {
-      res.status(400).json({ success: false, message: 'Invalid plan' });
-      return;
-    }
 
-    const user = await User.findById(req.user._id);
+    // Mock payment - in production use Stripe
+    const user = await User.findById(userId);
     if (!user) {
       res.status(404).json({ success: false, message: 'User not found' });
       return;
     }
 
-    const expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + 1);
-
-    user.subscription = {
-      plan,
-      expiresAt
-    };
-    await User.findByIdAndUpdate(user.id!, { subscription: user.subscription });
-
-    res.json({
-      success: true,
-      message: `Upgraded to ${plan} plan successfully`,
-      subscription: user.subscription
-    });
-
-  } catch (error) {
-    console.error('Payment error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-export const getSubscriptionStatus = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      res.status(404).json({ success: false, message: 'User not found' });
-      return;
-    }
-
-    res.json({
-      success: true,
+    // Update user to Pro
+    await User.findByIdAndUpdate(userId, {
       subscription: {
-        plan: user.subscription.plan,
-        expiresAt: user.subscription.expiresAt,
-        isActive: user.subscription?.plan !== 'free' && 
-                  (!user.subscription?.expiresAt || new Date(user.subscription.expiresAt) > new Date()),
-        credits: user.credits
+        plan: 'pro',
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       }
     });
 
+    res.json({
+      success: true,
+      message: 'Payment successful! You are now a Pro user.',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        subscription: {
+          plan: 'pro',
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        },
+        isPro: true
+      }
+    });
   } catch (error) {
-    console.error('Subscription status error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Payment error:', error);
+    res.status(500).json({ success: false, message: 'Payment failed' });
   }
 };
 
-export const cancelSubscription = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getPricingPlans = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      res.status(404).json({ success: false, message: 'User not found' });
-      return;
-    }
-
-    user.subscription = {
-      plan: 'free',
-      expiresAt: null
-    };
-    await User.findByIdAndUpdate(user.id!, { subscription: user.subscription });
-
-    res.json({
-      success: true,
-      message: 'Subscription cancelled successfully'
-    });
-
+    const plans = [
+      {
+        id: 'free',
+        name: 'Free',
+        price: 0,
+        features: [
+          '3 free analyses',
+          'Basic ATS score',
+          'Basic suggestions'
+        ]
+      },
+      {
+        id: 'pro',
+        name: 'Pro',
+        price: 19.99,
+        features: [
+          'Unlimited analyses',
+          'Advanced ATS scoring',
+          'Detailed suggestions',
+          'Priority support',
+          'Export reports'
+        ]
+      }
+    ];
+    
+    res.json({ success: true, plans });
   } catch (error) {
-    console.error('Cancel subscription error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Pricing plans error:', error);
+    res.status(500).json({ success: false, message: 'Failed to get plans' });
   }
 };

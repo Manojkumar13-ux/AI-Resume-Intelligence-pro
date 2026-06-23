@@ -1,25 +1,30 @@
 import { Request, Response } from 'express';
-import { AuthRequest } from '../middleware/auth.js';
-import { Analysis } from '../models/Analysis.js';
-import { Resume } from '../models/Resume.js';
-import { User } from '../models/User.js';
+import { AuthRequest } from '../middleware/auth.js'; // Added .js
+import { Analysis } from '../models/Analysis.js'; // Added .js
+import { Resume } from '../models/Resume.js'; // Added .js
+import { User } from '../models/User.js'; // Added .js
 
 export const getDashboardData = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?.id || req.user?._id;
 
     const analyses = await Analysis.find({ userId });
     const resumes = await Resume.find({ userId });
 
     const totalAnalyzed = analyses.length;
-    const latestScore = analyses.length > 0 ? analyses[0].atsScore : 0;
+    
+    const sortedAnalyses = [...analyses].sort((a: any, b: any) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    
+    const latestScore = sortedAnalyses.length > 0 ? sortedAnalyses[0].score || 0 : 0;
     const averageScore = analyses.length > 0 
-      ? analyses.reduce((acc: number, a: any) => acc + a.atsScore, 0) / analyses.length 
+      ? Math.round(analyses.reduce((acc: number, a: any) => acc + (a.score || 0), 0) / analyses.length) 
       : 0;
 
     let improvementTrend = 0;
     if (analyses.length >= 2) {
-      const scores = analyses.slice().reverse().map((a: any) => a.atsScore);
+      const scores = sortedAnalyses.map((a: any) => a.score || 0);
       const differences = scores.slice(1).map((score: number, i: number) => score - scores[i]);
       improvementTrend = differences.reduce((a: number, b: number) => a + b, 0) / differences.length;
     }
@@ -32,13 +37,16 @@ export const getDashboardData = async (req: AuthRequest, res: Response): Promise
     });
 
     const skills = Array.from(skillMap.entries())
-      .map(([name, count]) => ({ name, value: Math.min((count / analyses.length) * 100, 100) }))
+      .map(([name, count]) => ({ 
+        name, 
+        value: Math.min((count / analyses.length) * 100, 100) 
+      }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 10);
 
-    const scoreHistory = analyses.slice().reverse().map((analysis: any) => ({
-      date: analysis.createdAt.toISOString().split('T')[0],
-      score: analysis.atsScore
+    const scoreHistory = sortedAnalyses.map((analysis: any) => ({
+      date: new Date(analysis.createdAt).toISOString().split('T')[0],
+      score: analysis.score || 0
     }));
 
     const recentActivity = resumes.slice(0, 5).map((resume: any) => ({
@@ -49,17 +57,19 @@ export const getDashboardData = async (req: AuthRequest, res: Response): Promise
       createdAt: resume.createdAt
     }));
 
+    const user = await User.findById(userId);
+
     res.json({
       success: true,
       dashboard: {
         stats: {
           totalAnalyzed,
           latestScore,
-          averageScore: Math.round(averageScore),
+          averageScore,
           improvementTrend: Math.round(improvementTrend * 100) / 100,
           totalResumes: resumes.length,
-          creditsRemaining: req.user.isPro ? Infinity : req.user.credits,
-          isPro: req.user.isPro
+          creditsRemaining: user?.isPro ? Infinity : (user?.credits || 0),
+          isPro: user?.isPro || false
         },
         charts: {
           skills,
@@ -78,6 +88,7 @@ export const getDashboardData = async (req: AuthRequest, res: Response): Promise
 export const getTrendData = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { period = '30d' } = req.query;
+    const userId = req.user?.id || req.user?._id;
     
     let startDate = new Date();
     switch (period) {
@@ -94,15 +105,15 @@ export const getTrendData = async (req: AuthRequest, res: Response): Promise<voi
         startDate.setDate(startDate.getDate() - 30);
     }
 
-    const analyses = await Analysis.find({
-      userId: req.user._id,
-      createdAt: { $gte: startDate }
+    const allAnalyses = await Analysis.find({ userId });
+    const filteredAnalyses = allAnalyses.filter((analysis: any) => {
+      return new Date(analysis.createdAt) >= startDate;
     });
 
-    const data = analyses.map((analysis: any) => ({
-      date: analysis.createdAt.toISOString().split('T')[0],
-      score: analysis.atsScore,
-      jobFit: analysis.jobFitScore
+    const data = filteredAnalyses.map((analysis: any) => ({
+      date: new Date(analysis.createdAt).toISOString().split('T')[0],
+      score: analysis.score || 0,
+      jobFit: analysis.jobFitScore || analysis.score || 0
     }));
 
     res.json({
@@ -118,9 +129,13 @@ export const getTrendData = async (req: AuthRequest, res: Response): Promise<voi
 
 export const getRecommendations = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const analyses = await Analysis.find({ userId: req.user._id })
-      .sort({ createdAt: -1 })
-      .limit(5);
+    const userId = req.user?.id || req.user?._id;
+    
+    const allAnalyses = await Analysis.find({ userId });
+    const sortedAnalyses = [...allAnalyses].sort((a: any, b: any) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    const analyses = sortedAnalyses.slice(0, 5);
 
     if (analyses.length === 0) {
       res.json({

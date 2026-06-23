@@ -1,4 +1,4 @@
-import { db } from '../config/database';
+import { db } from '../config/database.js'; // Added .js
 import bcrypt from 'bcryptjs';
 
 export interface IUser {
@@ -7,7 +7,7 @@ export interface IUser {
   password: string;
   name: string;
   credits: number;
-  subscription?: {        // <-- ADD THIS
+  subscription?: {
     plan: 'free' | 'pro' | 'enterprise';
     expiresAt?: string;
   };
@@ -41,7 +41,7 @@ export const User = {
     return db.users.create(userData);
   },
 
-  findAll: async (): Promise<IUser[]> => {  // <-- ADD THIS
+  findAll: async (): Promise<IUser[]> => {
     return db.users.findAll();
   },
 

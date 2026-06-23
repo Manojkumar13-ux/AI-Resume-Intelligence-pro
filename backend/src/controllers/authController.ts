@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User.js';
-import { AuthRequest } from '../middleware/auth.js';
+import { User } from '../models/User.js'; // Added .js
+import { AuthRequest } from '../middleware/auth.js'; // Added .js
 
 const validateEmail = (email: string): boolean => {
   return /^\S+@\S+\.\S+$/.test(email);
@@ -59,17 +59,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       password: hashedPassword,
       name: name.trim(),
       credits: 3,
-      role: 'user',
       subscription: {
         plan: 'free',
         expiresAt: null
       },
-      lastLogin: new Date()
+      createdAt: new Date()
     });
 
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET!,
+      process.env.JWT_SECRET || 'secret',
       { expiresIn: '7d' }
     );
 
@@ -81,7 +80,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         email: user.email,
         name: user.name,
         credits: user.credits,
-        role: user.role,
         subscription: user.subscription,
         isPro: User.isPro(user)
       }
@@ -128,12 +126,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    user.lastLogin = new Date();
-    await User.findByIdAndUpdate(user.id!, { lastLogin: user.lastLogin });
+    await User.findByIdAndUpdate(user.id!, { lastLogin: new Date() });
 
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET!,
+      process.env.JWT_SECRET || 'secret',
       { expiresIn: '7d' }
     );
 
@@ -145,7 +142,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         email: user.email,
         name: user.name,
         credits: user.credits,
-        role: user.role,
         subscription: user.subscription,
         isPro: User.isPro(user)
       }
@@ -162,7 +158,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const getProfile = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = await User.findById(req.user._id);
+    const userId = req.user?.id || req.user?._id;
+    const user = await User.findById(userId);
+    
     if (!user) {
       res.status(404).json({ 
         success: false,
@@ -174,7 +172,11 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<void>
     res.json({
       success: true,
       user: {
-        ...user,
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        credits: user.credits,
+        subscription: user.subscription,
         isPro: User.isPro(user),
         creditsRemaining: User.creditsRemaining(user)
       }
@@ -191,6 +193,7 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<void>
 export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { name, email } = req.body;
+    const userId = req.user?.id || req.user?._id;
     const updates: any = {};
 
     if (name) updates.name = name.trim();
@@ -205,7 +208,7 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
       updates.email = email.toLowerCase();
     }
 
-    const user = await User.findByIdAndUpdate(req.user._id, updates);
+    const user = await User.findByIdAndUpdate(userId, updates);
     if (!user) {
       res.status(404).json({ 
         success: false,
@@ -214,12 +217,18 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
+    const updatedUser = await User.findById(userId);
+
     res.json({
       success: true,
       user: {
-        ...user,
-        isPro: User.isPro(user),
-        creditsRemaining: User.creditsRemaining(user)
+        id: updatedUser?.id,
+        email: updatedUser?.email,
+        name: updatedUser?.name,
+        credits: updatedUser?.credits,
+        subscription: updatedUser?.subscription,
+        isPro: updatedUser ? User.isPro(updatedUser) : false,
+        creditsRemaining: updatedUser ? User.creditsRemaining(updatedUser) : 0
       }
     });
   } catch (error) {
@@ -234,6 +243,7 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
 export const changePassword = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { currentPassword, newPassword } = req.body;
+    const userId = req.user?.id || req.user?._id;
 
     if (!currentPassword || !newPassword) {
       res.status(400).json({ 
@@ -251,7 +261,7 @@ export const changePassword = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(userId);
     if (!user) {
       res.status(404).json({ 
         success: false,
@@ -272,7 +282,7 @@ export const changePassword = async (req: AuthRequest, res: Response): Promise<v
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
     
-    await User.findByIdAndUpdate(req.user._id, { password: hashedPassword });
+    await User.findByIdAndUpdate(userId, { password: hashedPassword });
 
     res.json({
       success: true,
@@ -289,7 +299,9 @@ export const changePassword = async (req: AuthRequest, res: Response): Promise<v
 
 export const googleSuccess = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = req.user;
+    const userId = req.user?.id || req.user?._id;
+    const user = await User.findById(userId);
+    
     if (!user) {
       res.status(401).json({ 
         success: false,
@@ -300,7 +312,7 @@ export const googleSuccess = async (req: AuthRequest, res: Response): Promise<vo
 
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET!,
+      process.env.JWT_SECRET || 'secret',
       { expiresIn: '7d' }
     );
 
@@ -312,7 +324,6 @@ export const googleSuccess = async (req: AuthRequest, res: Response): Promise<vo
         email: user.email,
         name: user.name,
         credits: user.credits,
-        role: user.role,
         subscription: user.subscription,
         isPro: User.isPro(user)
       }

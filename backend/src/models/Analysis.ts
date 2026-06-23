@@ -1,4 +1,4 @@
-import { db } from '../config/database';
+import { db } from '../config/database.js'; // Added .js
 
 export interface IAnalysis {
   id?: string;
