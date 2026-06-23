@@ -2,7 +2,6 @@
   "name": "ai-resume-intelligence-backend",
   "version": "1.0.0",
   "description": "AI Resume Intelligence Pro Backend API",
-  "type": "module",
   "scripts": {
     "dev": "nodemon --exec tsx src/server.ts",
     "build": "tsc",
