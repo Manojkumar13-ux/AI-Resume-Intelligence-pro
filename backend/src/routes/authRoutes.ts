@@ -13,27 +13,26 @@ import { auth } from '../middleware/auth.js';
 
 const router = Router();
 
-// Local auth routes
+// ============================================
+// LOCAL AUTH ROUTES
+// ============================================
 router.post('/register', register);
 router.post('/login', login);
 router.get('/profile', auth, getProfile);
 router.put('/profile', auth, updateProfile);
 router.put('/change-password', auth, changePassword);
 
-// Google OAuth routes
-router.get('/google', (req, res, next) => {
-  console.log('🔑 Google login initiated');
+// ============================================
+// GOOGLE OAUTH ROUTES - MUST BE DEFINED
+// ============================================
+router.get('/google', 
   passport.authenticate('google', { 
     scope: ['profile', 'email'],
     session: false
-  })(req, res, next);
-});
+  })
+);
 
-router.get('/google/callback', 
-  (req, res, next) => {
-    console.log('🔄 Google callback received');
-    next();
-  },
+router.get('/google/callback',
   passport.authenticate('google', { 
     session: false,
     failureRedirect: '/login?error=google_auth_failed'
@@ -52,7 +51,6 @@ router.get('/google/callback',
       
       // Redirect to frontend with token
       const frontendUrl = process.env.FRONTEND_URL || 'https://ai-resume-intellegence-pro.vercel.app';
-      console.log(`🔀 Redirecting to: ${frontendUrl}/auth/success?token=${token}`);
       res.redirect(`${frontendUrl}/auth/success?token=${token}`);
     } catch (error) {
       console.error('❌ Google callback error:', error);
@@ -61,7 +59,6 @@ router.get('/google/callback',
   }
 );
 
-// Google success endpoint
 router.get('/google/success', auth, googleSuccess);
 
 export default router;
