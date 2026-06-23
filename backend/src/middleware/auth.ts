@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
 
-// Extend Express Request properly
+// This properly extends Express Request
 export interface AuthRequest extends Request {
   user?: any;
   token?: string;
@@ -14,7 +14,9 @@ export const authenticate = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const authHeader = req.header('Authorization');
+    // Use req.get() or req.headers directly
+    const authHeader = req.headers.authorization;
+    
     if (!authHeader) {
       res.status(401).json({ message: 'No token provided' });
       return;
