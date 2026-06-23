@@ -1,25 +1,27 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import passport from 'passport'; // <-- ADD THIS
 import { connectDB } from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import resumeRoutes from './routes/resumeRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import './config/passport.js'; // <-- ADD THIS – executes the strategy registration
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// CORS Configuration - Allow all Vercel domains
+// CORS Configuration
 app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:5001',
     'https://ai-resume-intelligence-pro.vercel.app',
     'https://ai-resume-intellegence-pro.vercel.app',
-    /\.vercel\.app$/  // Allow all Vercel subdomains (preview deployments)
+    /\.vercel\.app$/
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -28,6 +30,9 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 👇 ADD THIS – initialize Passport
+app.use(passport.initialize());
 
 // Routes
 app.use('/api/auth', authRoutes);
