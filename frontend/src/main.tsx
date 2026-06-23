@@ -4,6 +4,11 @@ import { BrowserRouter as Router, Routes, Route, useNavigate, Link, useLocation 
 import Login from './pages/Login';
 
 // ============================================
+// API CONFIGURATION - CHANGE THIS URL
+// ============================================
+const API_URL = import.meta.env.VITE_API_URL || 'https://ai-resume-intelligence-pro-1.onrender.com';
+
+// ============================================
 // HOME PAGE
 // ============================================
 function Home() {
@@ -11,7 +16,7 @@ function Home() {
   const [backendStatus, setBackendStatus] = useState('Checking...');
 
   useEffect(() => {
-    fetch('http://localhost:5001/api/health')
+    fetch(`${API_URL}/api/health`)
       .then(res => res.json())
       .then(() => setBackendStatus('🟢 Online'))
       .catch(() => setBackendStatus('🔴 Offline'));
@@ -189,7 +194,7 @@ function Register() {
     }
 
     try {
-      const response = await fetch('http://localhost:5001/api/auth/register', {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })
@@ -912,7 +917,7 @@ function Dashboard() {
     formData.append('jobDescription', jobDescription || '');
 
     try {
-      const uploadRes = await fetch('http://localhost:5001/api/resume/upload', {
+      const uploadRes = await fetch(`${API_URL}/api/resume/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
@@ -921,7 +926,7 @@ function Dashboard() {
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData.message || 'Upload failed');
 
-      const analyzeRes = await fetch(`http://localhost:5001/api/resume/${uploadData.resumeId}/analyze`, {
+      const analyzeRes = await fetch(`${API_URL}/api/resume/${uploadData.resumeId}/analyze`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1231,7 +1236,7 @@ function MyData() {
 
   const fetchResumes = async (token: string) => {
     try {
-      const res = await fetch('http://localhost:5001/api/resume/history', {
+      const res = await fetch(`${API_URL}/api/resume/history`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -1257,13 +1262,12 @@ function MyData() {
 
     setDeletingId(resumeId);
     try {
-      const res = await fetch(`http://localhost:5001/api/resume/${resumeId}`, {
+      const res = await fetch(`${API_URL}/api/resume/${resumeId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        // Remove the deleted resume from the list
         setResumes(prev => prev.filter(r => r.id !== resumeId));
       } else {
         alert(data.message || 'Failed to delete resume');
