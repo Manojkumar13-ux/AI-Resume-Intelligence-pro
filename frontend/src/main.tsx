@@ -6,7 +6,7 @@ import Login from './pages/Login';
 // ============================================
 // API CONFIGURATION - CHANGE THIS URL
 // ============================================
-const API_URL = import.meta.env.VITE_API_URL || 'https://ai-resume-intelligence-pro-1.onrender.com';
+const API_URL = 'https://ai-resume-intelligence-pro-1.onrender.com';
 
 // ============================================
 // HOME PAGE

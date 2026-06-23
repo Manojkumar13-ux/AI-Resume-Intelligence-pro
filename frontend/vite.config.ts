@@ -5,12 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    // Only use proxy in development
-    proxy: process.env.NODE_ENV === 'development' ? {
-      '/api': {
-        target: 'http://localhost:5001',
-        changeOrigin: true,
-      },
-    } : {},
+  },
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify('https://ai-resume-intelligence-pro-1.onrender.com'),
   },
 })

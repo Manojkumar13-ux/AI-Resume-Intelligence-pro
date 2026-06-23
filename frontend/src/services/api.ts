@@ -4,8 +4,7 @@ import axios from 'axios';
 // API CONFIGURATION
 // ============================================
 // Use environment variable or fallback to deployed backend
-const API_URL = import.meta.env.VITE_API_URL || 'https://ai-resume-intelligence-pro-1.onrender.com/api';
-
+const API_URL = 'https://ai-resume-intelligence-pro-1.onrender.com/api';
 export const api = axios.create({
   baseURL: API_URL,
   headers: {
