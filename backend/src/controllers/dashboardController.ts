@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { AuthRequest } from '../middleware/auth.js'; // Added .js
-import { Analysis } from '../models/Analysis.js'; // Added .js
-import { Resume } from '../models/Resume.js'; // Added .js
-import { User } from '../models/User.js'; // Added .js
+import { AuthRequest } from '../middleware/auth.js';
+import { Analysis } from '../models/Analysis.js';
+import { Resume } from '../models/Resume.js';
+import { User } from '../models/User.js';
 
 export const getDashboardData = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -57,7 +57,10 @@ export const getDashboardData = async (req: AuthRequest, res: Response): Promise
       createdAt: resume.createdAt
     }));
 
+    // Get user and check Pro status
     const user = await User.findById(userId);
+    const isPro = user ? User.isPro(user) : false;
+    const creditsRemaining = user ? User.creditsRemaining(user) : 0;
 
     res.json({
       success: true,
@@ -68,8 +71,8 @@ export const getDashboardData = async (req: AuthRequest, res: Response): Promise
           averageScore,
           improvementTrend: Math.round(improvementTrend * 100) / 100,
           totalResumes: resumes.length,
-          creditsRemaining: user?.isPro ? Infinity : (user?.credits || 0),
-          isPro: user?.isPro || false
+          creditsRemaining: isPro ? Infinity : creditsRemaining,
+          isPro: isPro
         },
         charts: {
           skills,

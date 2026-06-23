@@ -1,4 +1,4 @@
-import { db } from '../config/database.js'; // Added .js
+import { db } from '../config/database.js';
 import bcrypt from 'bcryptjs';
 
 export interface IUser {
@@ -7,14 +7,17 @@ export interface IUser {
   password: string;
   name: string;
   credits: number;
+  isPro?: boolean;  // ADD THIS
   subscription?: {
     plan: 'free' | 'pro' | 'enterprise';
     expiresAt?: string;
   };
   createdAt: Date;
   updatedAt?: Date;
+  lastLogin?: Date;
 }
 
+// Use named export only (remove default export)
 export const User = {
   findOne: async (query: any): Promise<IUser | null> => {
     const users = db.users.find(query);
