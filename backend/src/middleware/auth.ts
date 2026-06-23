@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User'; // Removed .js
+import { User } from '../models/User.js'; // Removed .js
 
 export interface AuthRequest extends Request {
   user?: any;
