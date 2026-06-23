@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
+// ============================================
+// API CONFIGURATION
+// ============================================
+const API_URL = import.meta.env.VITE_API_URL || 'https://ai-resume-intelligence-pro-1.onrender.com';
+
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -8,9 +13,9 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // ✅ Google Login Handler
+  // ✅ Google Login Handler - Uses deployed backend
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:5001/api/auth/google';
+    window.location.href = `${API_URL}/api/auth/google`;
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -20,7 +25,7 @@ const Login: React.FC = () => {
 
     // Try real backend login first
     try {
-      const response = await fetch('http://localhost:5001/api/auth/login', {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -40,7 +45,6 @@ const Login: React.FC = () => {
     }
 
     // ✅ FALLBACK: Accept ANY credentials
-    // This allows login with any email/password
     if (!email || !password) {
       setError('Please enter email and password');
       setLoading(false);
@@ -260,7 +264,7 @@ const Login: React.FC = () => {
           <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
         </div>
 
-        {/* ✅ Google Login Button */}
+        {/* ✅ Google Login Button - Now uses deployed backend */}
         <button
           onClick={handleGoogleLogin}
           style={{
@@ -315,7 +319,6 @@ const Login: React.FC = () => {
           </Link>
         </div>
 
-        {/* ✅ Show that ANY credentials work */}
         <div style={{
           marginTop: '12px',
           padding: '10px',
@@ -329,22 +332,6 @@ const Login: React.FC = () => {
             margin: 0
           }}>
             🔑 Any email/password works • Or use your real account
-          </p>
-        </div>
-
-        {/* ✅ Show demo credentials hint */}
-        <div style={{
-          marginTop: '8px',
-          padding: '8px',
-          background: 'rgba(79, 70, 229, 0.05)',
-          borderRadius: '6px'
-        }}>
-          <p style={{
-            fontSize: '11px',
-            color: 'rgba(255,255,255,0.25)',
-            margin: 0
-          }}>
-            Demo: demo@example.com / any password
           </p>
         </div>
       </div>
