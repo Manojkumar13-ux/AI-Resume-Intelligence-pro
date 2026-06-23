@@ -9,23 +9,22 @@ export interface IResume {
   score: number;
   status: 'uploaded' | 'processing' | 'analyzed' | 'error';
   jobDescription: string;
+  name: string;
+  entryRole: string;
+  company: string;
   metadata: {
     fileSize: number;
     mimeType: string;
     pages: number;
   };
+  analysis?: any;
   createdAt: Date;
   updatedAt?: Date;
 }
 
 export const Resume = {
   create: async (resumeData: any): Promise<IResume> => {
-    const data = {
-      ...resumeData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
-    };
-    return db.resumes.create(data);
+    return db.resumes.create(resumeData);
   },
 
   find: async (query: any): Promise<IResume[]> => {

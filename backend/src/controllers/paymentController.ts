@@ -7,13 +7,13 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response): Pr
     const { plan } = req.body;
     
     if (!['pro', 'enterprise'].includes(plan)) {
-      res.status(400).json({ message: 'Invalid plan' });
+      res.status(400).json({ success: false, message: 'Invalid plan' });
       return;
     }
 
     const user = await User.findById(req.user._id);
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ success: false, message: 'User not found' });
       return;
     }
 
@@ -24,7 +24,7 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response): Pr
       plan,
       expiresAt
     };
-    await user.save();
+    await User.findByIdAndUpdate(user.id!, { subscription: user.subscription });
 
     res.json({
       success: true,
@@ -34,7 +34,7 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response): Pr
 
   } catch (error) {
     console.error('Payment error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -42,7 +42,7 @@ export const getSubscriptionStatus = async (req: AuthRequest, res: Response): Pr
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ success: false, message: 'User not found' });
       return;
     }
 
@@ -51,14 +51,15 @@ export const getSubscriptionStatus = async (req: AuthRequest, res: Response): Pr
       subscription: {
         plan: user.subscription.plan,
         expiresAt: user.subscription.expiresAt,
-        isActive: user.isPro,
+        isActive: user.subscription?.plan !== 'free' && 
+                  (!user.subscription?.expiresAt || new Date(user.subscription.expiresAt) > new Date()),
         credits: user.credits
       }
     });
 
   } catch (error) {
     console.error('Subscription status error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -66,7 +67,7 @@ export const cancelSubscription = async (req: AuthRequest, res: Response): Promi
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ success: false, message: 'User not found' });
       return;
     }
 
@@ -74,7 +75,7 @@ export const cancelSubscription = async (req: AuthRequest, res: Response): Promi
       plan: 'free',
       expiresAt: null
     };
-    await user.save();
+    await User.findByIdAndUpdate(user.id!, { subscription: user.subscription });
 
     res.json({
       success: true,
@@ -83,6 +84,6 @@ export const cancelSubscription = async (req: AuthRequest, res: Response): Promi
 
   } catch (error) {
     console.error('Cancel subscription error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

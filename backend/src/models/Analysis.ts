@@ -20,25 +20,22 @@ export interface IAnalysis {
     skills: number;
   };
   recommendedRoles: string[];
+  rawResponse?: string;
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 export const Analysis = {
   create: async (analysisData: any): Promise<IAnalysis> => {
-    const data = {
-      ...analysisData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
-    };
-    return db.analyses.create(data);
-  },
-
-  findOne: async (query: any): Promise<IAnalysis | null> => {
-    return db.analyses.findOne(query);
+    return db.analyses.create(analysisData);
   },
 
   find: async (query: any): Promise<IAnalysis[]> => {
     return db.analyses.find(query);
+  },
+
+  findOne: async (query: any): Promise<IAnalysis | null> => {
+    return db.analyses.findOne(query);
   },
 
   findById: async (id: string): Promise<IAnalysis | null> => {

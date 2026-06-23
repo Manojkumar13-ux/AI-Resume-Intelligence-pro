@@ -3,8 +3,8 @@ import {
   createCheckoutSession,
   getSubscriptionStatus,
   cancelSubscription
-} from '../controllers/paymentController';
-import { authenticate } from '../middleware/auth';
+} from '../controllers/paymentController.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 

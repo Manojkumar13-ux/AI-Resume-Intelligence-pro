@@ -27,7 +27,6 @@ export const uploadResume = async (req: AuthRequest, res: Response): Promise<voi
       const extractedText = pdfData.text;
 
       console.log('📄 PDF Extracted Text Length:', extractedText.length);
-      console.log('📄 First 200 chars:', extractedText.substring(0, 200));
 
       const resume = {
         id: Date.now().toString(),
@@ -50,7 +49,6 @@ export const uploadResume = async (req: AuthRequest, res: Response): Promise<voi
       };
 
       resumes.push(resume);
-      console.log('✅ Resume saved:', resume.id);
 
       res.json({
         success: true,
@@ -80,7 +78,7 @@ export const analyzeResume = async (req: AuthRequest, res: Response): Promise<vo
     }
 
     if (!resume.extractedText || resume.extractedText.length < 50) {
-      res.status(400).json({ success: false, message: 'Resume text too short. Please upload a valid PDF with text content.' });
+      res.status(400).json({ success: false, message: 'Resume text too short' });
       return;
     }
 
@@ -95,8 +93,6 @@ export const analyzeResume = async (req: AuthRequest, res: Response): Promise<vo
     resume.score = analysis.score;
     resume.status = 'analyzed';
     resume.analysis = analysis;
-
-    console.log('✅ Analysis complete. Score:', analysis.score);
 
     res.json({ success: true, analysis });
 
@@ -138,28 +134,35 @@ async function analyzeWithOllama(resumeText: string, jobDescription: string, tar
     }
   `;
 
-  const response = await fetch('http://localhost:11434/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'llama3.2:1b',
-      prompt: prompt,
-      stream: false,
-      options: { temperature: 0.3 }
-    })
-  });
+  try {
+    const response = await fetch('http://localhost:11434/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama3.2:1b',
+        prompt: prompt,
+        stream: false,
+        options: { temperature: 0.3 }
+      })
+    });
 
-  if (!response.ok) {
-    throw new Error(`Ollama error: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`Ollama error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('📝 Ollama Response length:', data.response?.length || 0);
+
+    const jsonMatch = data.response.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No JSON found in Ollama response');
+    }
+
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error('Ollama error:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  const jsonMatch = data.response.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('No JSON found in Ollama response');
-  }
-
-  return JSON.parse(jsonMatch[0]);
 }
 
 export const getResumeHistory = async (req: AuthRequest, res: Response): Promise<void> => {
