@@ -7,7 +7,8 @@ export interface IUser {
   password: string;
   name: string;
   credits: number;
-  isPro?: boolean;  // Add this
+  googleId?: string;        // <-- Add this
+  isPro?: boolean;          // <-- Add this (if you have it)
   subscription?: {
     plan: 'free' | 'pro' | 'enterprise';
     expiresAt?: string;
