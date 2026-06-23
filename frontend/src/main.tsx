@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
+import AuthSuccess from './pages/AuthSuccess';
 
 // ============================================
 // API CONFIGURATION - CHANGE THIS URL
@@ -1527,6 +1528,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/analysis" element={<Analysis />} />
         <Route path="/my-data" element={<MyData />} />
+        <Route path="/auth/success" element={<AuthSuccess />} />  
       </Routes>
     </Router>
   );
