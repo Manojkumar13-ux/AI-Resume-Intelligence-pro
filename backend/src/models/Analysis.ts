@@ -1,33 +1,28 @@
-import { db } from '../config/database.js';
+import { db } from '../config/database';
 
 export interface IAnalysis {
   id?: string;
-  resumeId: string;
   userId: string;
-  atsScore: number;
-  skills: string[];
-  missingKeywords: string[];
-  suggestions: string[];
-  strengths: string[];
-  weaknesses: string[];
-  jobFitScore: number;
-  improvementTrend: number;
+  resumeId: string;
+  score: number;
   atsCompatibility: {
     format: number;
     keywords: number;
     experience: number;
-    education: number;
-    skills: number;
   };
+  strengths: string[];
+  weaknesses: string[];
+  suggestions: string[];
+  skills: string[];
+  missingKeywords: string[];
   recommendedRoles: string[];
-  rawResponse?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
 
 export const Analysis = {
-  create: async (analysisData: any): Promise<IAnalysis> => {
-    return db.analyses.create(analysisData);
+  create: async (data: any): Promise<IAnalysis> => {
+    return db.analyses.create(data);
   },
 
   find: async (query: any): Promise<IAnalysis[]> => {

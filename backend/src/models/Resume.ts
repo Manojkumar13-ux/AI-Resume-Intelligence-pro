@@ -1,30 +1,25 @@
-import { db } from '../config/database.js';
+import { db } from '../config/database';
 
 export interface IResume {
   id?: string;
   userId: string;
   fileName: string;
-  filePath: string;
-  extractedText: string;
-  score: number;
-  status: 'uploaded' | 'processing' | 'analyzed' | 'error';
-  jobDescription: string;
+  originalName: string;
   name: string;
   entryRole: string;
   company: string;
-  metadata: {
-    fileSize: number;
-    mimeType: string;
-    pages: number;
-  };
-  analysis?: any;
+  jobDescription?: string;
+  status: 'pending' | 'analyzed' | 'failed';
+  score?: number;
+  filePath: string;
+  analysisId?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
 
 export const Resume = {
-  create: async (resumeData: any): Promise<IResume> => {
-    return db.resumes.create(resumeData);
+  create: async (data: any): Promise<IResume> => {
+    return db.resumes.create(data);
   },
 
   find: async (query: any): Promise<IResume[]> => {

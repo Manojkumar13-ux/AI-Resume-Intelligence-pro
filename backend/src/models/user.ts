@@ -1,4 +1,4 @@
-import { db } from '../config/database.js';
+import { db } from '../config/database';
 import bcrypt from 'bcryptjs';
 
 export interface IUser {
@@ -7,12 +7,10 @@ export interface IUser {
   password: string;
   name: string;
   credits: number;
-  role: 'user' | 'admin';
-  subscription: {
+  subscription?: {        // <-- ADD THIS
     plan: 'free' | 'pro' | 'enterprise';
-    expiresAt: Date | null;
+    expiresAt?: string;
   };
-  lastLogin: Date;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -41,6 +39,10 @@ export const User = {
       userData.password = await bcrypt.hash(userData.password, salt);
     }
     return db.users.create(userData);
+  },
+
+  findAll: async (): Promise<IUser[]> => {  // <-- ADD THIS
+    return db.users.findAll();
   },
 
   isPro: (user: IUser): boolean => {
