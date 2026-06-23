@@ -2,10 +2,14 @@ import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth.js';
 import { User } from '../models/User.js';
 
+// Helper to safely access request body
+const getBody = (req: AuthRequest): any => req.body as any;
+
 export const createPaymentIntent = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const body = getBody(req);
     const userId = req.user?.id || req.user?._id;
-    const { plan = 'pro' } = req.body;
+    const { plan = 'pro' } = body;
 
     if (!userId) {
       res.status(401).json({ success: false, message: 'User not authenticated' });
@@ -45,8 +49,9 @@ export const createPaymentIntent = async (req: AuthRequest, res: Response): Prom
 
 export const createCheckoutSession = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const body = getBody(req);
     const userId = req.user?.id || req.user?._id;
-    const { plan = 'pro' } = req.body;
+    const { plan = 'pro' } = body;
 
     if (!userId) {
       res.status(401).json({ success: false, message: 'User not authenticated' });

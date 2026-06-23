@@ -10,6 +10,11 @@ import { Analysis } from '../models/Analysis.js';
 // In-memory storage (temporary - replace with database)
 let resumes: any[] = [];
 
+// Helper to safely access request properties
+const getParams = (req: AuthRequest): any => req.params as any;
+const getBody = (req: AuthRequest): any => req.body as any;
+const getQuery = (req: AuthRequest): any => req.query as any;
+
 export const uploadResume = async (req: AuthRequest, res: Response): Promise<void> => {
   // Use multer directly
   upload.single('resume')(req as any, res as any, async (err: any) => {
@@ -158,8 +163,10 @@ async function analyzeResumeWithAI(resumeText: string, jobDescription: string, t
 
 export const analyzeResume = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { resumeId } = req.params;
-    const { jobDescription, name, entryRole, company } = req.body;
+    const params = getParams(req);
+    const body = getBody(req);
+    const { resumeId } = params;
+    const { jobDescription, name, entryRole, company } = body;
     const userId = req.user?.id || req.user?._id;
 
     const resume = resumes.find(r => r.id === resumeId && r.userId === userId);
@@ -244,8 +251,9 @@ export const getResumeHistory = async (req: AuthRequest, res: Response): Promise
 
 export const getResumeById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const params = getParams(req);
     const userId = req.user?.id || req.user?._id;
-    const resume = resumes.find(r => r.id === req.params.resumeId && r.userId === userId);
+    const resume = resumes.find(r => r.id === params.resumeId && r.userId === userId);
     
     if (!resume) {
       res.status(404).json({ success: false, message: 'Resume not found' });
@@ -260,8 +268,9 @@ export const getResumeById = async (req: AuthRequest, res: Response): Promise<vo
 
 export const deleteResume = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const params = getParams(req);
     const userId = req.user?.id || req.user?._id;
-    const index = resumes.findIndex(r => r.id === req.params.resumeId && r.userId === userId);
+    const index = resumes.findIndex(r => r.id === params.resumeId && r.userId === userId);
     
     if (index === -1) {
       res.status(404).json({ success: false, message: 'Resume not found' });
@@ -275,7 +284,7 @@ export const deleteResume = async (req: AuthRequest, res: Response): Promise<voi
     }
     
     resumes.splice(index, 1);
-    await Resume.findByIdAndDelete(req.params.resumeId);
+    await Resume.findByIdAndDelete(params.resumeId);
     
     res.json({ success: true, message: 'Resume deleted successfully' });
   } catch (error) {

@@ -2,11 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
 
-// This properly extends Express Request
-export interface AuthRequest extends Request {
+// Properly extend Request - use type alias instead of interface
+export type AuthRequest = Request & {
   user?: any;
   token?: string;
-}
+};
 
 export const authenticate = async (
   req: AuthRequest,
@@ -14,7 +14,7 @@ export const authenticate = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Use req.get() or req.headers directly
+    // Use req.headers (available from Request)
     const authHeader = req.headers.authorization;
     
     if (!authHeader) {

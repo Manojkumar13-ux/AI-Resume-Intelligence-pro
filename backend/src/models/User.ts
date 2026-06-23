@@ -7,6 +7,7 @@ export interface IUser {
   password: string;
   name: string;
   credits: number;
+  isPro?: boolean;  // Add this
   subscription?: {
     plan: 'free' | 'pro' | 'enterprise';
     expiresAt?: string;
@@ -37,6 +38,12 @@ export const User = {
     if (userData.password) {
       const salt = await bcrypt.genSalt(10);
       userData.password = await bcrypt.hash(userData.password, salt);
+    }
+    // Set isPro based on subscription
+    if (userData.subscription && userData.subscription.plan !== 'free') {
+      userData.isPro = true;
+    } else {
+      userData.isPro = false;
     }
     return db.users.create(userData);
   },
@@ -70,5 +77,4 @@ export const User = {
   }
 };
 
-// Named export for compatibility
 export default User;

@@ -4,6 +4,9 @@ import { Analysis } from '../models/Analysis.js';
 import { Resume } from '../models/Resume.js';
 import { User } from '../models/User.js';
 
+// Helper to safely access request query
+const getQuery = (req: AuthRequest): any => req.query as any;
+
 export const getDashboardData = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id || req.user?._id;
@@ -58,6 +61,10 @@ export const getDashboardData = async (req: AuthRequest, res: Response): Promise
     }));
 
     const user = await User.findById(userId);
+    
+    // Calculate isPro and credits properly
+    const isPro = user ? User.isPro(user) : false;
+    const creditsRemaining = user ? User.creditsRemaining(user) : 0;
 
     res.json({
       success: true,
@@ -68,8 +75,8 @@ export const getDashboardData = async (req: AuthRequest, res: Response): Promise
           averageScore,
           improvementTrend: Math.round(improvementTrend * 100) / 100,
           totalResumes: resumes.length,
-          creditsRemaining: user?.isPro ? Infinity : (user?.credits || 0),
-          isPro: user?.isPro || false
+          creditsRemaining: isPro ? Infinity : creditsRemaining,
+          isPro: isPro
         },
         charts: {
           skills,
@@ -87,7 +94,8 @@ export const getDashboardData = async (req: AuthRequest, res: Response): Promise
 
 export const getTrendData = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { period = '30d' } = req.query;
+    const query = getQuery(req);
+    const { period = '30d' } = query;
     const userId = req.user?.id || req.user?._id;
     
     let startDate = new Date();
