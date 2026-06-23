@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User.js'; // Added .js
+import { User } from '../models/User.js';
 
+// Extend Express Request properly
 export interface AuthRequest extends Request {
   user?: any;
   token?: string;
@@ -33,7 +34,7 @@ export const authenticate = async (
       return;
     }
 
-    req.user = { ...user, _id: user.id };
+    req.user = { ...user, _id: user.id, id: user.id };
     req.token = token;
     next();
   } catch (error) {
@@ -48,6 +49,7 @@ export const authenticate = async (
   }
 };
 
+// Export as auth for convenience
 export const auth = authenticate;
 
 export const isAdmin = async (
@@ -72,7 +74,13 @@ export const requirePro = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await User.findById(req.user._id);
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) {
+      res.status(401).json({ message: 'User not authenticated' });
+      return;
+    }
+
+    const user = await User.findById(userId);
     if (!user) {
       res.status(401).json({ message: 'User not found' });
       return;
@@ -81,7 +89,7 @@ export const requirePro = async (
     const isPro = user.subscription?.plan !== 'free' && 
                   (!user.subscription?.expiresAt || new Date(user.subscription.expiresAt) > new Date());
 
-    if (isPro || user.credits > 0) {
+    if (isPro || (user.credits && user.credits > 0)) {
       next();
     } else {
       res.status(403).json({ 
@@ -90,6 +98,7 @@ export const requirePro = async (
       });
     }
   } catch (error) {
+    console.error('Subscription check error:', error);
     res.status(500).json({ message: 'Error checking subscription' });
   }
 };

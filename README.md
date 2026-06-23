@@ -4,7 +4,7 @@
 
 **Frontend:** https://ai-resume-intellegence-pro.vercel.app
 
-**Backend:** (Coming soon)
+**Backend:** https://ai-resume-intelligence-pro-1.onrender.com/api/health
 
 
 login page

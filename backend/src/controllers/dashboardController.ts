@@ -57,10 +57,7 @@ export const getDashboardData = async (req: AuthRequest, res: Response): Promise
       createdAt: resume.createdAt
     }));
 
-    // Get user and check Pro status
     const user = await User.findById(userId);
-    const isPro = user ? User.isPro(user) : false;
-    const creditsRemaining = user ? User.creditsRemaining(user) : 0;
 
     res.json({
       success: true,
@@ -71,8 +68,8 @@ export const getDashboardData = async (req: AuthRequest, res: Response): Promise
           averageScore,
           improvementTrend: Math.round(improvementTrend * 100) / 100,
           totalResumes: resumes.length,
-          creditsRemaining: isPro ? Infinity : creditsRemaining,
-          isPro: isPro
+          creditsRemaining: user?.isPro ? Infinity : (user?.credits || 0),
+          isPro: user?.isPro || false
         },
         charts: {
           skills,
